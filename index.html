@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>For My Forever Valentine</title>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;0,700;1,500&family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --bg-gradient: linear-gradient(135deg, #fff5f5 0%, #ffd1ba 50%, #fdf0f0 100%);
+            --rose: #ff758c;
+            --glass: rgba(255, 255, 255, 0.5);
+            --text: #5a3d3d;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--bg-gradient);
+            color: var(--text);
+            overflow: hidden;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        #canvas-container {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            z-index: -1;
+            pointer-events: none;
+        }
+
+        .orb {
+            position: absolute;
+            width: 600px; height: 600px;
+            background: radial-gradient(circle, rgba(255,182,193,0.3) 0%, rgba(255,255,255,0) 70%);
+            border-radius: 50%;
+            filter: blur(60px);
+            animation: float-orb 25s infinite alternate ease-in-out;
+        }
+
+        @keyframes float-orb {
+            0% { transform: translate(-20%, -20%) scale(1); }
+            100% { transform: translate(30%, 40%) scale(1.2); }
+        }
+
+        .petal {
+            position: absolute;
+            background: linear-gradient(to bottom right, #ffb7b7, #ffd1ba);
+            border-radius: 150% 0 150% 0;
+            opacity: 0.5;
+            pointer-events: none;
+            animation: fall linear forwards;
+        }
+
+        .translucent-heart {
+            position: absolute;
+            color: var(--rose);
+            opacity: 0.2;
+            pointer-events: none;
+            animation: fall linear forwards;
+        }
+
+        @keyframes fall {
+            0% { transform: translateY(-10vh) rotate(0deg) translateX(0); opacity: 0; }
+            10% { opacity: 0.6; }
+            90% { opacity: 0.6; }
+            100% { transform: translateY(110vh) rotate(360deg) translateX(80px); opacity: 0; }
+        }
+
+        .photo-reveal {
+            position: absolute;
+            z-index: 1;
+            border: 12px solid #fff;
+            box-shadow: 0 30px 60px -12px rgba(255, 117, 140, 0.45);
+            border-radius: 24px;
+            overflow: hidden;
+            opacity: 0;
+            transform: scale(0.9) translateY(40px);
+            transition: all 1.8s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .photo-reveal.active { opacity: 1; transform: scale(1) translateY(0); }
+        .photo-reveal img { width: 100%; height: 100%; object-fit: cover; }
+
+        .size-hero { width: 280px; height: 380px; position: relative; margin: 0 auto 25px; border-radius: 140px 140px 24px 24px; display: block; }
+        .size-standard { width: 200px; height: 260px; }
+        
+        .pos-left { left: 5%; top: 20%; transform: rotate(-6deg); }
+        .pos-right { right: 5%; top: 15%; transform: rotate(6deg); }
+        .pos-bottom { right: 8%; bottom: 10%; transform: rotate(-4deg); }
+
+        .container { 
+            width: 90%; 
+            max-width: 480px; 
+            text-align: center; 
+            z-index: 10;
+            background: var(--glass);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            padding: 40px 30px;
+            border-radius: 40px;
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            box-shadow: 0 25px 50px rgba(0,0,0,0.08);
+        }
+
+        section { display: none; opacity: 0; transform: translateY(20px); transition: 1.2s ease; }
+        section.active { display: block; opacity: 1; transform: translateY(0); }
+
+        h1 { font-family: 'Playfair Display', serif; font-size: 2.3rem; margin-bottom: 10px; color: var(--text); }
+        h2 { font-family: 'Playfair Display', serif; font-style: italic; color: var(--rose); font-size: 1.5rem; margin-bottom: 25px; }
+        p { font-size: 1.05rem; line-height: 1.6; margin-bottom: 30px; font-weight: 400; color: #5a3d3d; }
+
+        .btn-group { display: flex; flex-direction: column; gap: 12px; align-items: center; }
+        .btn {
+            background: white;
+            padding: 18px 30px;
+            border-radius: 100px;
+            border: none;
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: var(--text);
+            cursor: pointer;
+            transition: all 0.4s ease;
+            width: 100%;
+            max-width: 320px;
+            box-shadow: 0 10px 20px rgba(255, 117, 140, 0.1);
+        }
+
+        .btn:hover {
+            background: var(--rose);
+            color: white;
+            transform: translateY(-5px) scale(1.02);
+            box-shadow: 0 15px 30px rgba(255, 117, 140, 0.4);
+        }
+
+        .heart-click {
+            position: absolute; pointer-events: none; color: var(--rose);
+            animation: heart-pop 1s ease-out forwards; z-index: 1000;
+        }
+        @keyframes heart-pop { 0% { transform: scale(0); opacity: 1; } 100% { transform: scale(2.5) translateY(-60px); opacity: 0; } }
+    </style>
+</head>
+<body onclick="showHeart(event)">
+
+    <div id="canvas-container">
+        <div class="orb"></div>
+        <div class="orb" style="right:0; bottom:0; animation-delay: -7s; background: radial-gradient(circle, rgba(255,209,186,0.3) 0%, rgba(255,255,255,0) 70%);"></div>
+    </div>
+
+    <audio id="bgMusic" loop preload="auto">
+        <source src="your-song.mp3" type="audio/mpeg">
+    </audio>
+
+    <div class="container">
+        <section id="step1" class="active">
+            <div class="photo-reveal size-hero active"><img src="her1.jpg"></div>
+            <h1>Hey Beautiful,</h1>
+            <p>I built this little corner of the internet just for you.</p>
+            <h2>Will you be my Valentine?</h2>
+            <div class="btn-group">
+                <button class="btn" onclick="startExperience()">Yes, a thousand times</button>
+            </div>
+        </section>
+
+        <section id="step2">
+            <h1>Design our night...</h1>
+            <p>Kyunki sirf aapki marzi hi chalti hai!</p>
+            <div class="btn-group">
+                <button class="btn" onclick="nextStep(2, 3, 'her2.jpg', 'pos-left')">Yes, Meri hi marzi chalegi</button>
+                <button class="btn" onclick="nextStep(2, 3, 'her2.jpg', 'pos-left')">You’re sweet for admitting it</button>
+            </div>
+        </section>
+
+        <section id="step3">
+            <h1>Where does our story go?</h1>
+            <div class="btn-group">
+                <button class="btn" onclick="nextStep(3, 4, 'us2.jpg', 'pos-bottom')">Walk under moonlight</button>
+                <button class="btn" onclick="nextStep(3, 4, 'us2.jpg', 'pos-bottom')">Movie Night</button>
+                <button class="btn" onclick="nextStep(3, 4, 'us2.jpg', 'pos-bottom')">Home Snuggles</button>
+            </div>
+        </section>
+
+        <section id="step4">
+            <h1>What will we do?</h1>
+            <div class="btn-group">
+                <button class="btn" onclick="nextStep(4, 6, 'her3.jpg', 'pos-right')">Chat about how annoying you are</button>
+                <button class="btn" onclick="nextStep(4, 'music', 'her3.jpg', 'pos-right')">Music & Dance</button>
+                <button class="btn" onclick="nextStep(4, 'movie', 'her3.jpg', 'pos-right')">Watch a movie</button>
+            </div>
+        </section>
+
+        <section id="step-movie">
+            <h1>Which genre, Madam?</h1>
+            <div class="btn-group">
+                <button class="btn" onclick="nextStep('movie', 6, 'us3.jpg', 'pos-left')">Jo tumhari marzi</button>
+                <button class="btn" onclick="nextStep('movie', 6, 'us3.jpg', 'pos-left')">Thriller</button>
+                <button class="btn" onclick="nextStep('movie', 6, 'us3.jpg', 'pos-left')">Romantic</button>
+            </div>
+        </section>
+
+        <section id="step-music">
+            <h1>What’s on the playlist?</h1>
+            <div class="btn-group">
+                <button class="btn" onclick="nextStep('music', 6, 'us3.jpg', 'pos-left')">Bollywood Classics</button>
+                <button class="btn" onclick="nextStep('music', 6, 'us3.jpg', 'pos-left')">Tollywood Hits</button>
+                <button class="btn" onclick="nextStep('music', 6, 'us3.jpg', 'pos-left')">Darshan Raval Special</button>
+            </div>
+        </section>
+
+        <section id="step6">
+            <h1>How should I dress up?</h1>
+            <div class="btn-group">
+                <button class="btn" onclick="nextStep(6, 7, 'us4.jpg', 'pos-center-finale')">Whatever makes you hug me more</button>
+                <button class="btn" onclick="nextStep(6, 7, 'us4.jpg', 'pos-center-finale')">Sharp Formals</button>
+            </div>
+        </section>
+
+        <section id="step7">
+            <h1>What will you eat?</h1>
+            <div class="btn-group">
+                <button class="btn" onclick="nextStep(7, 8, '', '')">My brain (as usual)</button>
+                <button class="btn" onclick="nextStep(7, 8, '', '')">Desi Khana</button>
+                <button class="btn" onclick="nextStep(7, 8, '', '')">Something special by me</button>
+            </div>
+        </section>
+
+        <section id="step8">
+            <h1 style="color:var(--rose)">I Adore You!</h1>
+            <p>Thank you for being my <b>Devi Ji</b>; your strength is my anchor and your love is my light. <br><br> 
+            Thank you for not being like any other person—you are truly one of a kind. I am so lucky you're mine.</p>
+            <h2 style="font-size: 1.3rem;">Happy Valentine's Day!</h2>
+        </section>
+    </div>
+
+    <div id="floating-photo-container"></div>
+
+    <script>
+        const canvas = document.getElementById('canvas-container');
+        const audio = document.getElementById('bgMusic');
+
+        function createParticle() {
+            const isHeart = Math.random() > 0.7;
+            const el = document.createElement('div');
+            if (isHeart) {
+                el.className = 'translucent-heart';
+                el.innerHTML = '❤️';
+                el.style.fontSize = Math.random() * 10 + 10 + 'px';
+            } else {
+                el.className = 'petal';
+                const size = Math.random() * 15 + 10 + 'px';
+                el.style.width = size;
+                el.style.height = size;
+            }
+            el.style.left = Math.random() * 100 + 'vw';
+            el.style.animationDuration = Math.random() * 4 + 5 + 's';
+            canvas.appendChild(el);
+            setTimeout(() => el.remove(), 9000);
+        }
+
+        setInterval(createParticle, 150);
+
+        // Special function to trigger music on first interaction
+        function startExperience() {
+            audio.play().catch(e => console.log("Audio play blocked until interaction."));
+            nextStep(1, 2, 'us1.jpg', 'pos-right');
+        }
+
+        function nextStep(current, next, photoSrc, photoClass) {
+            let currId = isNaN(current) ? 'step-' + current : 'step' + current;
+            document.getElementById(currId).classList.remove('active');
+            
+            if(photoSrc) {
+                const container = document.getElementById('floating-photo-container');
+                container.innerHTML = ''; 
+                const newPhoto = document.createElement('div');
+                newPhoto.className = `photo-reveal size-standard ${photoClass}`;
+                if(photoClass === 'pos-center-finale') {
+                    newPhoto.style.position = 'relative';
+                    newPhoto.style.margin = '20px auto';
+                    newPhoto.style.display = 'block';
+                    newPhoto.style.left = 'auto'; newPhoto.style.top = 'auto';
+                }
+                newPhoto.innerHTML = `<img src="${photoSrc}">`;
+                container.appendChild(newPhoto);
+                setTimeout(() => newPhoto.classList.add('active'), 100);
+            }
+
+            setTimeout(() => {
+                document.getElementById(currId).style.display = 'none';
+                let nextId = isNaN(next) ? 'step-' + next : 'step' + next;
+                const nextSec = document.getElementById(nextId);
+                nextSec.style.display = 'block';
+                setTimeout(() => nextSec.classList.add('active'), 50);
+            }, 800);
+        }
+
+        function showHeart(e) {
+            const h = document.createElement('div');
+            h.innerHTML = '❤️';
+            h.className = 'heart-click';
+            h.style.left = (e.clientX - 10) + 'px';
+            h.style.top = (e.clientY - 10) + 'px';
+            document.body.appendChild(h);
+            setTimeout(() => h.remove(), 1000);
+        }
+    </script>
+</body>
+</html>
